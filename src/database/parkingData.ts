@@ -1,0 +1,30 @@
+import {ParkingSensors} from "../schema/parksensorSchema";
+//Funktion bettet Daten in die Datenbank an falls bereits vorhanden werden Daten ueberschrieben,
+//sonst neu angelegt.
+
+
+export const update = async (result: any) => {
+    await ParkingSensors.findOneAndUpdate({'body.device_id': result[0].body.device_id},
+        {$set:{
+                event: result[0].event,
+                body: {
+                    parser_id: result[0].body.parser_id,
+                    device_id: result[0].body.device_id,
+                    packet_id: result[0].body.packet_id,
+                    location: result[0].body.location,
+                    inserted_at: result[0].body.inserted_at,
+                    measured_at: result[0].body.measured_at,
+                    data: {
+                        map_state: parseInt(String(result[0].body.data.map_state)),
+                        message_type: result[0].body.data.message_type,
+                        p_state: result[0].body.data.p_state,
+                    },
+                    id: result[0].body.id,
+                },
+            }},
+        {
+            upsert: true,
+        }
+    ).then(()=>console.log('Data Added!'))
+}
+
