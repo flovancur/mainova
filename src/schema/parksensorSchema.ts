@@ -16,7 +16,7 @@ export interface Data {
             map_state: number;
             message_type: string;
             p_state: string;
-        }
+        };
         id: string;
     };
 }

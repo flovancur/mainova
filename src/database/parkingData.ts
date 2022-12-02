@@ -1,5 +1,5 @@
 import {ParkingSensors} from "../schema/parksensorSchema";
-//Funktion bettet Daten in die Datenbank an falls bereits vorhanden werden Daten ueberschrieben,
+//Funktion bettet Daten in die Datenbank ein falls bereits vorhanden werden Daten ueberschrieben,
 //sonst neu angelegt.
 
 
