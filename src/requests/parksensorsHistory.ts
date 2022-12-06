@@ -2,12 +2,14 @@ import * as cron from 'node-cron';
 import {ParkingHistory} from "../schema/parkingHistorySchema";
 import {ParkingSensors} from "../schema/parksensorSchema";
 import axios from 'axios'
+import * as dotenv from 'dotenv'
 
+dotenv.config();
 
 const ParkingHistoryData = () => {
-    cron.schedule('50 16 * * *', async () => {
-        const date = new Date();
-        const onlyDate = date.toISOString().split('T')[0];
+    cron.schedule('0 0 * * *', async () => {
+        const today = new Date();
+        const onlyDate = today.toISOString().split('T')[0];
         const result = await ParkingSensors.find();
         if (result) {
             for (const resultElement of result) {
@@ -15,7 +17,7 @@ const ParkingHistoryData = () => {
                 const id = resultElement.body.device_id;
                 let config = {
                     method: 'get',
-                    url: `https://mainova.element-iot.com/api/v1/devices/${id}/readings?limit=10&measured_at=${onlyDate}&auth=2F95D83072A510C35EA541CACC8BAC2F`,
+                    url: `https://mainova.element-iot.com/api/v1/devices/${id}/readings?limit=10&measured_at=${onlyDate}&auth=${process.env.API_KEY}`,
                 };
 
                 axios(config)
@@ -25,18 +27,18 @@ const ParkingHistoryData = () => {
                             {
                                 $set:{
                                     device_id: result.data.body[0].device_id,
-                                    body: {date: onlyDate, result: result.data.body},
+                                    body: {date: today, dailyData: result.data.body},
                                 }},{
                             upsert: true,
                             }
-                            ).then(()=>console.log('Data Added!')).catch((error) => console.log(error))
+                            ).then(()=>console.log(`Data of Device:${result.data.body[0].device_id} Added!`)).catch((error) => console.log(error))
                     })
                     .catch(function (error) {
                         console.log(error);
                     });
             }
         } else {
-            return console.log('Error');
+            return console.log('No Data found');
         }
     })
 }

@@ -3,9 +3,23 @@ import mongoose from 'mongoose';
 
 const schema = mongoose.Schema;
 
+
+
 interface timeAndData {
-    timestamp: string;
-    dailyData: [];
+    date: String;
+    dailyData: {
+        "parser_id": String;
+        "device_id": String;
+        "packet_id": String;
+        "location": null,
+        "inserted_at": String;
+        "measured_at": String;
+        "data": {
+            "map_state": Number,
+            "message_type": String;
+            "p_state": String;
+        };
+    }[];
 }
 
 export interface Data {

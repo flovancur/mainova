@@ -4,6 +4,7 @@ import {ParkingSensors} from "../schema/parksensorSchema";
 
 
 export const update = async (result: any) => {
+    const date = new Date()
     await ParkingSensors.findOneAndUpdate({'body.device_id': result[0].body.device_id},
         {$set:{
                 event: result[0].event,
@@ -12,8 +13,8 @@ export const update = async (result: any) => {
                     device_id: result[0].body.device_id,
                     packet_id: result[0].body.packet_id,
                     location: result[0].body.location,
-                    inserted_at: result[0].body.inserted_at,
-                    measured_at: result[0].body.measured_at,
+                    inserted_at: date,
+                    measured_at: date,
                     data: {
                         map_state: parseInt(String(result[0].body.data.map_state)),
                         message_type: result[0].body.data.message_type,
@@ -25,6 +26,6 @@ export const update = async (result: any) => {
         {
             upsert: true,
         }
-    ).then(()=>console.log('Data Added!'))
+    ).then(()=>console.log(`Data Added! Device-Id: ${result[0].body.device_id}`))
 }
 
