@@ -1,11 +1,11 @@
-import {ParkingSensors} from "../schema/parksensorSchema";
+import {parkingSensors} from "../schema/parksensorSchema";
 //Funktion bettet Daten in die Datenbank ein falls bereits vorhanden werden Daten ueberschrieben,
 //sonst neu angelegt.
 
 
 export const update = async (result: any) => {
-    const date = new Date()
-    await ParkingSensors.findOneAndUpdate({'body.device_id': result[0].body.device_id},
+    const date = new Date();
+    await parkingSensors.findOneAndUpdate({'body.device_id': result[0].body.device_id},
         {$set:{
                 event: result[0].event,
                 body: {

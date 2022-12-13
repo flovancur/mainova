@@ -1,0 +1,31 @@
+openapi: 3.0.0
+info:
+    version: '1.0'
+    title: Mainova API
+    description: Swagger für Mainova Schnittstelle
+servers:
+    # Added by API Auto Mocking Plugin
+    - description: SwaggerHub API Auto Mocking
+      url: http://localhost:3000
+paths:
+    /parking/current/:
+        get:
+            tags:
+                - Parking Sensors
+            parameters:
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: number
+                      minimum: 1
+                  description: Legt fest wie viele Tage in der Historie zurück gegangen werden soll. Standartmäßig werden die letzten 10 Tage zurück gegeben.
+                  example: 5
+
+            responses:
+                '200':
+                    description: Ok
+                '400':
+                    description: Input has to be an Integer
+                '404':
+                    description: Data not found

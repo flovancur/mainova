@@ -3,7 +3,7 @@ import {update} from "../database/parkingData";
 import * as dotenv from "dotenv";
 import Websocket from "ws";
 
-const websocket = () => {
+const websocketParking = () => {
 
     dotenv.config();
 
@@ -12,7 +12,7 @@ const websocket = () => {
     const parkingSensors = `wss://mainova.element-iot.com/api/v1/streams/${stream}/readings/socket?auth=${apiKey}`;
 
     const ws = new Websocket(parkingSensors);
-    let interval: string | number | NodeJS.Timer | null | undefined = null;
+    let intervalParking: string | number | NodeJS.Timer | null | undefined = null;
 
 
     ws.onopen = () => {
@@ -22,7 +22,7 @@ const websocket = () => {
                 date.getMonth() + 1
             }.${date.getFullYear()}`
         );
-        interval = setInterval(() => {
+        intervalParking = setInterval(() => {
             const heartbeat = 'ping';
             ws.send(heartbeat);
         }, 30000);
@@ -43,11 +43,11 @@ const websocket = () => {
                 date.toTimeString().split(' ')[0]
             }`
         );
-        if (interval != null) {
-            clearInterval(interval);
-            interval = null;
+        if (intervalParking != null) {
+            clearInterval(intervalParking);
+            intervalParking = null;
         }
     });
 }
 
-export default websocket;
+export default websocketParking;

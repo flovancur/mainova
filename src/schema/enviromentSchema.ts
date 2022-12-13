@@ -1,4 +1,3 @@
-// Die Struktur der Daten die von Mainova gesendet werden.
 import mongoose from 'mongoose';
 
 const schema = mongoose.Schema;
@@ -13,9 +12,15 @@ export interface Data {
         inserted_at: string;
         measured_at: string;
         data: {
-            map_state: number;
-            message_type: string;
-            p_state: string;
+            co: number;
+            humidity: number;
+            no2: number;
+            o3: number;
+            p10: number;
+            p25: number;
+            pressure: number;
+            so2: number;
+            temperature: number;
         };
         id: string;
     };
@@ -25,7 +30,7 @@ export interface Data {
 eigenes Interface angelegt*/
 
 
-const parkingSchema = new schema<Data> ({
+const enviromentSchema = new schema<Data> ({
     event: {type: String, required: true},
     body:{
         parser_id: {type: String, required: true},
@@ -35,12 +40,18 @@ const parkingSchema = new schema<Data> ({
         inserted_at: {type: String, required: true},
         measured_at: {type: String, required: true},
         data: {
-            map_state: {type: Number, required: true},
-            message_type: {type: String, required: true},
-            p_state: {type: String, required: true},
+            co: {type: Number, required: true},
+            humidity: {type: Number, required: true},
+            no2: {type: Number, required: true},
+            o3: {type: Number, required: true},
+            p10: {type: Number, required: true},
+            p25: {type: Number, required: true},
+            pressure: { type: Number, required: true},
+            so2: {type: Number, required: true},
+            temperature: {type: Number, required: true},
         },
         id: {type: String, required: true},
     }
 })
 
-export const parkingSensors = mongoose.model<Data>('parkingSensors', parkingSchema);
+export const enviromentSensors = mongoose.model<Data>('enviromentSensors', enviromentSchema);

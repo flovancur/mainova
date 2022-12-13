@@ -32,4 +32,4 @@ const parkingHistorySchema = new schema<Data> ({
     body:{type: Object}
 })
 
-export const ParkingHistory = mongoose.model<Data>('ParkingHistory', parkingHistorySchema);
+export const parkingHistory = mongoose.model<Data>('parkingHistory', parkingHistorySchema);

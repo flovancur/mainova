@@ -1,16 +1,16 @@
 import * as cron from 'node-cron';
-import {ParkingHistory} from "../schema/parkingHistorySchema";
-import {ParkingSensors} from "../schema/parksensorSchema";
+import {parkingHistory} from "../schema/parkingHistorySchema";
+import {parkingSensors} from "../schema/parksensorSchema";
 import axios from 'axios'
 import * as dotenv from 'dotenv'
 
 dotenv.config();
 
-const ParkingHistoryData = () => {
+const parkingHistoryData = () => {
     cron.schedule('0 0 * * *', async () => {
         const today = new Date();
         const onlyDate = today.toISOString().split('T')[0];
-        const result = await ParkingSensors.find();
+        const result = await parkingSensors.find();
         if (result) {
             for (const resultElement of result) {
 
@@ -23,7 +23,7 @@ const ParkingHistoryData = () => {
                 axios(config)
                     .then(async function (result) {
 
-                            await ParkingHistory.findOneAndUpdate({'body.device_id': result.data.body[0].device_id},
+                            await parkingHistory.findOneAndUpdate({'body.device_id': result.data.body[0].device_id},
                             {
                                 $set:{
                                     device_id: result.data.body[0].device_id,
@@ -44,5 +44,5 @@ const ParkingHistoryData = () => {
 }
 
 
-export default ParkingHistoryData;
+export default parkingHistoryData;
 
