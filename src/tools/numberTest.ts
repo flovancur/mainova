@@ -8,6 +8,6 @@ const testInt = (number: string) => {
         testInt = false;
     }
     return testInt;
-}
+};
 
 export default testInt;

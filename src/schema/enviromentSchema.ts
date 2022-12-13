@@ -4,7 +4,7 @@ const schema = mongoose.Schema;
 
 export interface Data {
     event: 'reading_added';
-    body:{
+    body: {
         parser_id: string;
         device_id: string;
         packet_id: string;
@@ -29,29 +29,28 @@ export interface Data {
 /*Diese Struktur ist bei allen Sensoren die selbe nur data unterscheidet sich und wird als
 eigenes Interface angelegt*/
 
-
-const enviromentSchema = new schema<Data> ({
-    event: {type: String, required: true},
-    body:{
-        parser_id: {type: String, required: true},
-        device_id: {type: String, required: true},
-        packet_id: {type: String, required: true},
-        location: {type: Array, required: false},
-        inserted_at: {type: String, required: true},
-        measured_at: {type: String, required: true},
+const enviromentSchema = new schema<Data>({
+    event: { type: String, required: true },
+    body: {
+        parser_id: { type: String, required: true },
+        device_id: { type: String, required: true },
+        packet_id: { type: String, required: true },
+        location: { type: Array, required: false },
+        inserted_at: { type: String, required: true },
+        measured_at: { type: String, required: true },
         data: {
-            co: {type: Number, required: true},
-            humidity: {type: Number, required: true},
-            no2: {type: Number, required: true},
-            o3: {type: Number, required: true},
-            p10: {type: Number, required: true},
-            p25: {type: Number, required: true},
-            pressure: { type: Number, required: true},
-            so2: {type: Number, required: true},
-            temperature: {type: Number, required: true},
+            co: { type: Number, required: true },
+            humidity: { type: Number, required: true },
+            no2: { type: Number, required: true },
+            o3: { type: Number, required: true },
+            p10: { type: Number, required: true },
+            p25: { type: Number, required: true },
+            pressure: { type: Number, required: true },
+            so2: { type: Number, required: true },
+            temperature: { type: Number, required: true },
         },
-        id: {type: String, required: true},
-    }
-})
+        id: { type: String, required: true },
+    },
+});
 
 export const enviromentSensors = mongoose.model<Data>('enviromentSensors', enviromentSchema);
