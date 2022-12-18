@@ -7,9 +7,8 @@ const websocketParking = () => {
 
     dotenv.config();
 
-    const apiKey = process.env.API_KEY;
-    const stream = process.env.STREAM_PARKINGSENSOR;
-    const parkingSensors = `wss://mainova.element-iot.com/api/v1/streams/${stream}/readings/socket?auth=${apiKey}`;
+    const stream = process.env.LINK_PARKINGSENSOR;
+    const parkingSensors = `${stream}`;
 
     const ws = new Websocket(parkingSensors);
     let intervalParking: string | number | NodeJS.Timer | null | undefined = null;

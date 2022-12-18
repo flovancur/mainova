@@ -7,11 +7,9 @@ const websocketEnviroment = () => {
 
     dotenv.config();
 
-    const apiKey = process.env.API_KEY;
-    const stream = process.env.STREAM_ENVIROMENTSENSOR;
-    const enviromentSensors = `wss://mainova.element-iot.com/api/v1/streams/${stream}/readings/socket?auth=${apiKey}`;
+    const stream = process.env.LINK_ENVIROMENTSENSOR;
 
-    const ws = new Websocket(enviromentSensors);
+    const ws = new Websocket(`${stream}`);
     let intervalEnviroment: string | number | NodeJS.Timer | null | undefined = null;
 
 
