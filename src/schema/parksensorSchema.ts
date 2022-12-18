@@ -44,3 +44,4 @@ const parkingSchema = new schema<Data> ({
 })
 
 export const parkingSensors = mongoose.model<Data>('parkingSensors', parkingSchema);
+export const parkingHistorySensors = mongoose.model<Data>('parkingHistorySensors', parkingSchema);

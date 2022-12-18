@@ -55,3 +55,4 @@ const enviromentSchema = new schema<Data> ({
 })
 
 export const enviromentSensors = mongoose.model<Data>('enviromentSensors', enviromentSchema);
+export const enviromentHistorySensors = mongoose.model<Data>('enviromentHistorySensors', enviromentSchema);
