@@ -1,8 +1,8 @@
 import * as dotenv from 'dotenv';
 import websocketParking from "./websockets/wsParkingsensors";
-import websocketEnviroment from "./websockets/wsEnviromentSensors";
+import websocketEnvironment from "./websockets/wsEnvironmentSensors";
 import parkingRoutes from './routes/parkingRoutes'
-import enviromentRoutes from "./routes/enviromentRoutes";
+import environmentRoutes from "./routes/environmentRoutes";
 import mongoose from "mongoose";
 import express from 'express';
 // import * as swaggerUi from 'swagger-ui-express';
@@ -28,13 +28,13 @@ mainovaDb().catch((err) => console.log(err));
 
 
 websocketParking(); // Startet die Parking-Websocketverbindung
-websocketEnviroment(); // Startet die Enviroment-Websocketverbindung
+websocketEnvironment(); // Startet die Environment-Websocketverbindung
 
 
 app.use(express.json());
 
-app.use('/mainova/parking', parkingRoutes);
-app.use('/mainova/enviroment', enviromentRoutes);
+app.use('/parking', parkingRoutes);
+app.use('/environment', environmentRoutes);
 
 /*app.use('/docs/api', swaggerUi.serve, swaggerUi.setup(swaggerDocument, options));
 const server = app.listen(port, () => {

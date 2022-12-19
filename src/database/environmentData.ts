@@ -1,4 +1,4 @@
-import {enviromentHistorySensors, enviromentSensors} from "../schema/enviromentSchema";
+import {environmentHistorySensors, environmentSensors} from "../schema/environmentSchema";
 //Funktion bettet Daten in die Datenbank ein falls bereits vorhanden werden Daten ueberschrieben,
 //sonst neu angelegt.
 
@@ -30,16 +30,16 @@ const data = (result: any,date: any) => {
 
 export const update = async (result: any) => {
     const date = new Date();
-    await enviromentSensors.findOneAndUpdate({'body.device_id': result[0].body.device_id},
+    await environmentSensors.findOneAndUpdate({'body.device_id': result[0].body.device_id},
         {$set:
         data(result,date)},
         {
             upsert: true,
         }
-    ).then(()=>console.log(`Enviroment Data Added! Device-Id: ${result[0].body.device_id}`))
+    ).then(()=>console.log(`Environment Data Added! Device-Id: ${result[0].body.device_id}`))
 
-    await enviromentHistorySensors.collection.insertOne(
+    await environmentHistorySensors.collection.insertOne(
         data(result,date)
-    ).then(()=>console.log(`Enviroment Data Added! Device-Id: ${result[0].body.device_id}`))
+    ).then(()=>console.log(`Environment Data Added! Device-Id: ${result[0].body.device_id}`))
 }
 

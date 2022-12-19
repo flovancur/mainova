@@ -30,7 +30,7 @@ export interface Data {
 eigenes Interface angelegt*/
 
 
-const enviromentSchema = new schema<Data> ({
+const environmentSchema = new schema<Data> ({
     event: {type: String, required: true},
     body:{
         parser_id: {type: String, required: true},
@@ -54,5 +54,5 @@ const enviromentSchema = new schema<Data> ({
     }
 })
 
-export const enviromentSensors = mongoose.model<Data>('enviromentSensors', enviromentSchema);
-export const enviromentHistorySensors = mongoose.model<Data>('enviromentHistorySensors', enviromentSchema);
+export const environmentSensors = mongoose.model<Data>('environmentSensors', environmentSchema);
+export const environmentHistorySensors = mongoose.model<Data>('environmentHistorySensors', environmentSchema);
