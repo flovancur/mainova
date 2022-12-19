@@ -50,7 +50,10 @@ router.get('/historic/:id',async (req, res) => {
         limit = 10;
     }
             const result = await parkingHistorySensors
-                .find({'body.device_id': req.params.id})
+                .find({'body.device_id': req.params.id,"date":
+                        {
+                            $gte: new Date((new Date().getTime() - (limit * 24 * 60 * 60 * 1000)))
+                        }} )
                 .limit(limit)
                 .sort({'body.measured_at': -1});
             if (result) {

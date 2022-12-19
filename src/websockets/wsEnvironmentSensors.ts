@@ -1,16 +1,16 @@
-import {Data} from "../schema/enviromentSchema";
-import {update} from "../database/enviromentData";
+import {Data} from "../schema/environmentSchema";
+import {update} from "../database/environmentData";
 import * as dotenv from "dotenv";
 import Websocket from "ws";
 
-const websocketEnviroment = () => {
+const websocketEnvironment = () => {
 
     dotenv.config();
 
-    const stream = process.env.LINK_ENVIROMENTSENSOR;
+    const stream = process.env.LINK_ENVIRONMENTSENSOR;
 
     const ws = new Websocket(`${stream}`);
-    let intervalEnviroment: string | number | NodeJS.Timer | null | undefined = null;
+    let intervalEnvironment: string | number | NodeJS.Timer | null | undefined = null;
 
 
     ws.onopen = () => {
@@ -20,7 +20,7 @@ const websocketEnviroment = () => {
                 date.getMonth() + 1
             }.${date.getFullYear()}`
         );
-        intervalEnviroment = setInterval(() => {
+        intervalEnvironment = setInterval(() => {
             const heartbeat = 'ping';
             ws.send(heartbeat);
         }, 30000);
@@ -41,11 +41,11 @@ const websocketEnviroment = () => {
                 date.toTimeString().split(' ')[0]
             }`
         );
-        if (intervalEnviroment != null) {
-            clearInterval(intervalEnviroment);
-            intervalEnviroment = null;
+        if (intervalEnvironment != null) {
+            clearInterval(intervalEnvironment);
+            intervalEnvironment = null;
         }
     });
 }
 
-export default websocketEnviroment;
+export default websocketEnvironment;
