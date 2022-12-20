@@ -22,7 +22,7 @@ const url = process.env.DATABASE || '127.0.0.1:27017';
 
 //Verbindung zu MongoDB aufbauen.
 const mainovaDb = async () => {
-    await mongoose.connect(`mongodb://${url}/mainova`).then(() => console.log('Connected to Database'));
+    await mongoose.connect(url).then(() => console.log('Connected to Database'));
 }
 mainovaDb().catch((err) => console.log(err));
 
