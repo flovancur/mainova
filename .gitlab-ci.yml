@@ -1,0 +1,124 @@
+stages:
+    - test
+    - build
+    - push
+
+.docker_login: &docker_login
+    - echo $CI_REGISTRY
+    - podman --version
+    - podman login -u "gitlab-ci-token" -p "$CI_JOB_TOKEN" $CI_REGISTRY
+
+variables:
+    DOCKER_BUILDKIT: 1
+    DOCKER_TLS_CERTDIR: "/certs"
+
+include:
+    - template: Security/SAST.gitlab-ci.yml
+    #- template: Code-Quality.gitlab-ci.yml
+    - template: Security/Secret-Detection.gitlab-ci.yml
+
+default:
+    tags:
+        - podman
+
+.unit test:
+    image: node:18-alpine3.16
+    retry: 1
+    before_script:
+        - if [[ -n "$HTTP_PROXY" ]] || [[ -n "$HTTPS_PROXY" ]] ; then npm config set strict-ssl false; fi
+        - "npm ci"
+    stage: test
+    script:
+        - "npm run test:ci"
+    timeout: 10m
+    coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
+    artifacts:
+        reports:
+            junit:
+                - test-results.xml
+            cobertura:
+                - coverage/cobertura-coverage.xml
+
+
+.cypress-e2e:
+    image: cypress/base
+    stage: test
+    tags:
+        - docker
+        - tests
+    before_script:
+        - if [[ -n "$HTTP_PROXY" ]] || [[ -n "$HTTPS_PROXY" ]] ; then npm config set strict-ssl false; fi
+        - npm ci
+    script:
+        - npx nyc instrument -x="**/*.min.js" --source-map false --compact=false --in-place public public
+        - npm run build
+        - npm start &
+        - npx cypress run
+        - npx nyc report --reporter=text --reporter cobertura
+    after_script:
+        - npm run merge-reports
+    coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
+    artifacts:
+        expire_in: 1 week
+        when: always
+        paths:
+            - cypress/screenshots
+            - cypress/videos
+        reports:
+            junit: results/test-output.xml
+            cobertura: coverage/cobertura-coverage.xml
+
+
+Build:
+    #needs:
+    #- unit test
+    #- cypress-e2e
+    image:
+        name: quay.io/podman/stable
+    stage: build
+    retry: 2
+    before_script:
+        - *docker_login
+    script:
+        #builder
+        - podman build --build-arg BUILDKIT_INLINE_CACHE=1 --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTPS_PROXY --layers --cache-from $CI_REGISTRY_IMAGE/builder --target builder -t $CI_REGISTRY_IMAGE/builder:latest .
+        #final nodejs image
+        - podman build --build-arg APP_VERSION=$CI_COMMIT_SHORT_SHA --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTPS_PROXY --layers --cache-from $CI_REGISTRY_IMAGE/builder --cache-from $CI_REGISTRY_IMAGE --build-arg BUILDKIT_INLINE_CACHE=1 -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .
+        # push both
+        - podman push $CI_REGISTRY_IMAGE/builder:latest
+        - podman push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+
+Push latest:
+    image:
+        name: quay.io/podman/stable
+    variables:
+        GIT_STRATEGY: none
+    stage: push
+    needs:
+        - Build
+    rules:
+        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    before_script:
+        - *docker_login
+    script:
+        - podman pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+        - podman tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest
+        - podman push $CI_REGISTRY_IMAGE:latest
+
+Push develop:
+    image:
+        name: quay.io/podman/stable
+    variables:
+        GIT_STRATEGY: none
+    stage: push
+    needs:
+        - Build
+    rules:
+        - if: $CI_COMMIT_BRANCH == "develop"
+    before_script:
+        - *docker_login
+    script:
+        - podman pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+        - podman tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:develop
+        - podman push $CI_REGISTRY_IMAGE:develop
+
