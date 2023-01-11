@@ -29,7 +29,7 @@ const data = (result: any,date: any) => {
 }
 
 export const update = async (result: any) => {
-    const date = new Date();
+    const date = Date.now();
     await environmentSensors.findOneAndUpdate({'body.device_id': result[0].body.device_id},
         {$set:
         data(result,date)},

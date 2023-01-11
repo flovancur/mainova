@@ -9,8 +9,8 @@ export interface Data {
         device_id: string;
         packet_id: string;
         location: never | null;
-        inserted_at: string;
-        measured_at: string;
+        inserted_at: number;
+        measured_at: number;
         data: {
             co: number;
             humidity: number;
@@ -37,8 +37,8 @@ const environmentSchema = new schema<Data> ({
         device_id: {type: String, required: true},
         packet_id: {type: String, required: true},
         location: {type: Array, required: false},
-        inserted_at: {type: String, required: true},
-        measured_at: {type: String, required: true},
+        inserted_at: {type: Number, required: true},
+        measured_at: {type: Number, required: true},
         data: {
             co: {type: Number, required: true},
             humidity: {type: Number, required: true},
