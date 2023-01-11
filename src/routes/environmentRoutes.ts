@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { environmentSensors } from "../schema/environmentSchema";
-import testInt from "../tools/numberTest";
 import {environmentHistorySensors} from "../schema/environmentSchema";
+
 //import testInt from "../tools/numberTest";
 
 const router = Router();
@@ -44,31 +44,72 @@ router.get('/current/:id',async (req, res) => {
     }
 });
 
-router.get('/historic/:id',async (req, res) => {
-    const qlimit = req.query.limit;
-    let limit
-    if(qlimit!== undefined){
-        if(testInt(qlimit.toString())){
-            limit = parseInt(qlimit.toString())
-        }else{
-            return res.status(400).json({ error: 'limit must be an integer!' });
-        }}else{
-        limit = 10;
+//Gibt die Historischen Daten eines bestimmten Sensors aus
+router.get('/historic/:id/last', async (req, res) => {
+    const type = req.query.type;
+    const value = req.query.value;
+
+    if (!type) {
+        return res.status(422).json({ error: 'type Parameter is missing!' });
     }
-    const result = await environmentHistorySensors
-        .find({'body.device_id': req.params.id})
-        .limit(limit)
-        .sort({'body.measured_at': -1});
-    if (result) {
-        const historicParking = []; // Liste der Daten die nachher ausgegeben werden
-        for (const resultElement of result) {
-            historicParking.push(returnBody(resultElement))
+
+    if (!value) {
+        return res.status(422).json({ error: 'value Parameter is missing!' });
+    }
+
+    if (type === 'entries') {
+        const result = await environmentHistorySensors.find({'body.device_id': req.params.id}).limit(Number(value));
+        if (result) {
+            return res.status(200).json(result);
+        } else {
+            return res.status(404).json({ error: 'No Data Found' });
         }
-        return res.status(200).json({result: historicParking});
+    } else if (type === 'minutes') {
+        console.log(type)
+        const date = new Date();
+        date.setTime(date.getTime() - Number(value) * 60 * 1000);
+        console.log(date)
+
+        const result = await environmentHistorySensors.find({ 'body.device_id': req.params.id,'body.measured_at': { $gte: +date } });
+        console.log(result)
+        if (result.length) {
+
+            return res.status(200).json(result);
+        } else {
+            return res.status(404).json({ error: 'No Data Found' });
+        }
+    } else if (type === 'hours') {
+        const date = new Date();
+        date.setTime(date.getTime() - Number(value) * 60 * 60 * 1000);
+
+        const result = await environmentHistorySensors.find({ 'body.device_id': req.params.id, 'body.measured_at': { $gte: +date } });
+
+        if (result.length) {
+            return res.status(200).json(result);
+        } else {
+            return res.status(404).json({ error: 'No Data Found' });
+        }
+    } else if (type === 'days') {
+        const date = new Date();
+        date.setTime(date.getTime() - Number(value) * 24 * 60 * 60 * 1000);
+
+        const result = await environmentHistorySensors.find({ 'body.device_id': req.params.id,'body.measured_at': { $gte: +date } });
+
+        if (result) {
+            return res.status(200).json(result);
+        } else {
+            return res.status(404).json({ error: 'No Data Found' });
+        }
+    }
+
+    const result = await environmentHistorySensors.find({'body.device_id': req.params.id});
+    if (result.length) {
+        return res.status(200).json(result);
     } else {
-        return res.status(404).json({ error: `No Id: ${req.params.id} found!` });
+        return res.status(404).json({ error: 'No Data Found' });
     }
 });
+
 
 
 export default router;

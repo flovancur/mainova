@@ -1,6 +1,5 @@
 import { Router } from 'express'
 import {parkingHistorySensors, parkingSensors} from "../schema/parksensorSchema";
-import testInt from "../tools/numberTest";
 
 const router = Router();
 
@@ -11,20 +10,6 @@ const returnBody = (result: any) => {
         p_state: [result.body.data.p_state, '']
     }
 }
-
-//Gibt alle aktuellen Daten der Parksensoren aus
-router.get('/current', async (_req, res) => {
-        const result = await parkingSensors.find();
-        if (result) {
-            let currentParking = [];
-            for (const resultElement of result) {
-                currentParking.push(returnBody(resultElement))
-            }
-            return res.status(200).json({data: currentParking});
-        } else {
-            return res.status(404).json({ error: `No Data found!` });
-        }
-});
 
 //Gibt den aktuellen Status eines ParkSensors aus
 router.get('/current/:id',async (req, res) => {
@@ -37,34 +22,70 @@ router.get('/current/:id',async (req, res) => {
     }
 });
 
-//Gibt die Historischen Daten eines bestimmten Sensors aus und kann mit 'limit=x' query eingegrenzt werden, wie weit die Daten zurückreichen sollen in Tagen
-router.get('/historic/:id',async (req, res) => {
-    const qlimit = req.query.limit;
-    let limit
-    if(qlimit!== undefined){
-        if(testInt(qlimit.toString())){
-            limit = parseInt(qlimit.toString())
-        }else{
-        return res.status(400).json({ error: 'limit must be an integer!' });
-    }}else{
-        limit = 10;
+//Gibt die Historischen Daten eines bestimmten Sensors aus
+router.get('/historic/:id/last', async (req, res) => {
+    const type = req.query.type;
+    const value = req.query.value;
+
+    if (!type) {
+        return res.status(422).json({ error: 'type Parameter is missing!' });
     }
-            const result = await parkingHistorySensors
-                .find({'body.device_id': req.params.id,"date":
-                        {
-                            $gte: new Date((new Date().getTime() - (limit * 24 * 60 * 60 * 1000)))
-                        }} )
-                .limit(limit)
-                .sort({'body.measured_at': -1});
-            if (result) {
-                const historicParking = []; // Liste der Daten die nachher ausgegeben werden
-                for (const resultElement of result) {
-                    historicParking.push(returnBody(resultElement))
-                }
-                return res.status(200).json({result: historicParking});
-            } else {
-                return res.status(404).json({ error: `No Id: ${req.params.id} found!` });
-            }
+
+    if (!value) {
+        return res.status(422).json({ error: 'value Parameter is missing!' });
+    }
+
+    if (type === 'entries') {
+        const result = await parkingHistorySensors.find({'body.device_id': req.params.id}).limit(Number(value));
+        if (result) {
+            return res.status(200).json(result);
+        } else {
+            return res.status(404).json({ error: 'No Data Found' });
+        }
+    } else if (type === 'minutes') {
+        const date = new Date();
+        date.setTime(date.getTime() - Number(value) * 60 * 1000);
+
+        const result = await parkingHistorySensors.find({  'body.device_id': req.params.id,'body.measured_at': { $gte: +date }  });
+
+        if (result.length) {
+            return res.status(200).json(result);
+        } else {
+            return res.status(404).json({ error: 'No Data Found' });
+        }
+    } else if (type === 'hours') {
+        const date = new Date();
+        date.setTime(date.getTime() - Number(value) * 60 * 60 * 1000);
+
+        const result = await parkingHistorySensors.find({  'body.device_id': req.params.id,'body.measured_at': { $gte: +date }  });
+
+        if (result.length) {
+            return res.status(200).json(result);
+        } else {
+            return res.status(404).json({ error: 'No Data Found' });
+        }
+    } else if (type === 'days') {
+        const date = new Date();
+        date.setTime(date.getTime() - Number(value) * 24 * 60 * 60 * 1000);
+
+        const result = await parkingHistorySensors.find({ 'body.device_id': req.params.id,'body.measured_at': { $gte: +date } });
+
+        if (result) {
+            return res.status(200).json(result);
+        } else {
+            return res.status(404).json({ error: 'No Data Found' });
+        }
+    }
+
+    const result = await parkingHistorySensors.find({'body.device_id': req.params.id});
+    if (result.length) {
+        return res.status(200).json(result);
+    } else {
+        return res.status(404).json({ error: 'No Data Found' });
+    }
 });
+
+
+
 
 export default router;
