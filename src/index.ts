@@ -15,13 +15,14 @@ const app = express();
 
 const port = process.env.PORT || 3000;
 let hostname = process.env.HOSTNAME || 'localhost';
-const url = process.env.DATABASE || '127.0.0.1:27017';
+const url = process.env.DATABASE || 'mongodb://127.0.0.1:27017/mainova';
 
 
 
 
 //Verbindung zu MongoDB aufbauen.
 const mainovaDb = async () => {
+    mongoose.set("strictQuery", false);
     await mongoose.connect(url).then(() => console.log('Connected to Database'));
 }
 mainovaDb().catch((err) => console.log(err));
