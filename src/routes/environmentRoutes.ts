@@ -1,25 +1,48 @@
-import { Router } from 'express'
-import { environmentSensors } from "../schema/environmentSchema";
-import {environmentHistorySensors} from "../schema/environmentSchema";
+import { Router } from 'express';
+import { environmentSensors } from '../schema/environmentSchema';
+import { environmentHistorySensors } from '../schema/environmentSchema';
 
 //import testInt from "../tools/numberTest";
 
 const router = Router();
 
-const returnBody = (result: any) =>{
+const returnBody = (result: any) => {
+    if (!(result.isArray === undefined)) {
+        return {
+            deviceId: result.body.device_id,
+            measured_at: result.body.measured_at,
+            humidity: [result.body.data.humidity, '%'],
+            no2: [result.body.data.no2, 'µg/m³'],
+            o3: [result.body.data.o3, 'µg/m³'],
+            pm10: [result.body.data.p10, 'µg/m³'],
+            pm2_5: [result.body.data.p25, 'µg/m³'],
+            pressure: [result.body.data.pressure, 'mbar'],
+            so2: [result.body.data.so2, 'µg/m³'],
+            temperature: [result.body.data.temperature, '°C'],
+        };
+    }
+    const list = [];
+    for (const resultElement of result) {
+        list.push(returnBodyArray(resultElement));
+    }
+
+    return list;
+};
+
+const returnBodyArray = (result: any) => {
     return {
         deviceId: result.body.device_id,
         measured_at: result.body.measured_at,
-        humidity: [result.body.data.humidity,'%'],
-        no2: [result.body.data.no2,'µg/m³'],
-        o3: [result.body.data.o3,'µg/m³'],
-        pm10: [result.body.data.p10,'µg/m³'],
-        pm2_5: [result.body.data.p25,'µg/m³'],
-        pressure: [result.body.data.pressure,'mbar'],
-        so2: [result.body.data.so2,'µg/m³'],
-        temperature: [result.body.data.temperature,'°C'],
-    }
-}
+        humidity: [result.body.data.humidity, '%'],
+        no2: [result.body.data.no2, 'µg/m³'],
+        o3: [result.body.data.o3, 'µg/m³'],
+        pm10: [result.body.data.p10, 'µg/m³'],
+        pm2_5: [result.body.data.p25, 'µg/m³'],
+        pressure: [result.body.data.pressure, 'mbar'],
+        so2: [result.body.data.so2, 'µg/m³'],
+        temperature: [result.body.data.temperature, '°C'],
+    };
+};
 
 //Gibt alle aktuellen Daten der Parksensoren aus
 router.get('/current', async (_req, res) => {
@@ -27,18 +50,18 @@ router.get('/current', async (_req, res) => {
     if (result) {
         let currentEnvironment = [];
         for (const resultElement of result) {
-            currentEnvironment.push(returnBody(resultElement))
+            currentEnvironment.push(returnBody(resultElement));
         }
-        return res.status(200).json({data: currentEnvironment});
+        return res.status(200).json({ data: currentEnvironment });
     } else {
         return res.status(404).json({ error: `No Data found!` });
     }
 });
 
-router.get('/current/:id',async (req, res) => {
-    const result = await environmentSensors.findOne({'body.device_id': req.params.id});
+router.get('/current/:id', async (req, res) => {
+    const result = await environmentSensors.findOne({ 'body.device_id': req.params.id });
     if (result) {
-        return res.status(200).json({data: returnBody(result)});
+        return res.status(200).json({ data: returnBody(result) });
     } else {
         return res.status(404).json({ error: `No Id: ${req.params.id} found!` });
     }
@@ -58,23 +81,26 @@ router.get('/historic/:id/last', async (req, res) => {
     }
 
     if (type === 'entries') {
-        const result = await environmentHistorySensors.find({'body.device_id': req.params.id}).limit(Number(value));
+        const result = await environmentHistorySensors.find({ 'body.device_id': req.params.id }).limit(Number(value));
         if (result) {
-            return res.status(200).json(result);
+            return res.status(200).json({ data: returnBody(result) });
         } else {
             return res.status(404).json({ error: 'No Data Found' });
         }
     } else if (type === 'minutes') {
-        console.log(type)
+        console.log(type);
         const date = new Date();
         date.setTime(date.getTime() - Number(value) * 60 * 1000);
-        console.log(date)
+        console.log(date);
 
-        const result = await environmentHistorySensors.find({ 'body.device_id': req.params.id,'body.measured_at': { $gte: +date } });
-        console.log(result)
+        const result = await environmentHistorySensors.find({
+            'body.device_id': req.params.id,
+            'body.measured_at': { $gte: +date },
+        });
         if (result.length) {
+            console.log(result);
 
-            return res.status(200).json(result);
+            return res.status(200).json({ data: returnBody(result) });
         } else {
             return res.status(404).json({ error: 'No Data Found' });
         }
@@ -82,10 +108,13 @@ router.get('/historic/:id/last', async (req, res) => {
         const date = new Date();
         date.setTime(date.getTime() - Number(value) * 60 * 60 * 1000);
 
-        const result = await environmentHistorySensors.find({ 'body.device_id': req.params.id, 'body.measured_at': { $gte: +date } });
+        const result = await environmentHistorySensors.find({
+            'body.device_id': req.params.id,
+            'body.measured_at': { $gte: +date },
+        });
 
         if (result.length) {
-            return res.status(200).json(result);
+            return res.status(200).json({ data: returnBody(result) });
         } else {
             return res.status(404).json({ error: 'No Data Found' });
         }
@@ -93,23 +122,24 @@ router.get('/historic/:id/last', async (req, res) => {
         const date = new Date();
         date.setTime(date.getTime() - Number(value) * 24 * 60 * 60 * 1000);
 
-        const result = await environmentHistorySensors.find({ 'body.device_id': req.params.id,'body.measured_at': { $gte: +date } });
+        const result = await environmentHistorySensors.find({
+            'body.device_id': req.params.id,
+            'body.measured_at': { $gte: +date },
+        });
 
         if (result) {
-            return res.status(200).json(result);
+            return res.status(200).json({ data: returnBody(result) });
         } else {
             return res.status(404).json({ error: 'No Data Found' });
         }
     }
 
-    const result = await environmentHistorySensors.find({'body.device_id': req.params.id});
+    const result = await environmentHistorySensors.find({ 'body.device_id': req.params.id });
     if (result.length) {
-        return res.status(200).json(result);
+        return res.status(200).json({ data: returnBody(result) });
     } else {
         return res.status(404).json({ error: 'No Data Found' });
     }
 });
-
-
 
 export default router;

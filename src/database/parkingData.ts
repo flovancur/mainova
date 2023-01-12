@@ -31,6 +31,7 @@ export const update = async (result: any) => {
             upsert: true,
         }
     ).then(()=>console.log(`Parking Data Added! Device-Id: ${result[0].body.device_id}`))
+
     await parkingHistorySensors.collection
         .insertOne(
             data(result, date),
