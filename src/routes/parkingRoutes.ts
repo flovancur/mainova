@@ -51,7 +51,7 @@ router.get('/historic/:id/last', async (req, res) => {
     }
 
     if (type === 'entries') {
-        const result = await parkingHistorySensors.find({ 'body.device_id': req.params.id }).limit(Number(value));
+        const result = await parkingHistorySensors.find({ 'body.device_id': req.params.id }).limit(Number(value)).sort({ _id: -1 });
         if (result) {
             return res.status(200).json({ data: returnBody(result) });
         } else {
