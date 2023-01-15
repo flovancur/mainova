@@ -4,27 +4,15 @@ import { parkingHistorySensors, parkingSensors } from '../schema/parksensorSchem
 const router = Router();
 
 const returnBody = (result: any) => {
-    if (!(result.isArray === undefined)) {
+
         return {
             deviceId: result.body.device_id,
             measured_at: result.body.measured_at,
             p_state: [result.body.data.p_state, ''],
         };
-    }
-    const list = [];
-    for (const resultElement of result) {
-        list.push(returnBodyArray(resultElement));
-    }
-    return list;
 };
 
-const returnBodyArray = (result: any) => {
-    return {
-        deviceId: result.body.device_id,
-        measured_at: result.body.measured_at,
-        p_state: [result.body.data.p_state, ''],
-    };
-};
+
 
 //Gibt den aktuellen Status eines ParkSensors aus
 router.get('/current/:id', async (req, res) => {
@@ -52,7 +40,11 @@ router.get('/historic/:id/last', async (req, res) => {
     if (type === 'entries') {
         const result = await parkingHistorySensors.find({ 'body.device_id': req.params.id }).limit(Number(value)).sort({ _id: -1 });
         if (result) {
-            return res.status(200).json({ data: returnBody(result) });
+            let historicParking = [];
+            for (const resultElement of result) {
+                historicParking.push(returnBody(resultElement));
+            }
+            return res.status(200).json({ data: historicParking });
         } else {
             return res.status(404).json({ error: 'No Data Found' });
         }
@@ -64,9 +56,12 @@ router.get('/historic/:id/last', async (req, res) => {
             'body.device_id': req.params.id,
             'body.measured_at': { $gte: +date },
         });
-
-        if (result.length) {
-            return res.status(200).json({ data: returnBody(result) });
+        if (result) {
+            let historicParking = [];
+            for (const resultElement of result) {
+                historicParking.push(returnBody(resultElement));
+            }
+            return res.status(200).json({ data: historicParking });
         } else {
             return res.status(404).json({ error: 'No Data Found' });
         }
@@ -79,8 +74,12 @@ router.get('/historic/:id/last', async (req, res) => {
             'body.measured_at': { $gte: +date },
         });
 
-        if (result.length) {
-            return res.status(200).json({ data: returnBody(result) });
+        if (result) {
+            let historicParking = [];
+            for (const resultElement of result) {
+                historicParking.push(returnBody(resultElement));
+            }
+            return res.status(200).json({ data: historicParking });
         } else {
             return res.status(404).json({ error: 'No Data Found' });
         }
@@ -94,16 +93,24 @@ router.get('/historic/:id/last', async (req, res) => {
         });
 
         if (result) {
-            return res.status(200).json({ data: returnBody(result) });
+            let historicParking = [];
+            for (const resultElement of result) {
+                historicParking.push(returnBody(resultElement));
+            }
+            return res.status(200).json({ data: historicParking });
         } else {
             return res.status(404).json({ error: 'No Data Found' });
         }
     }
 
     const result = await parkingHistorySensors.find({ 'body.device_id': req.params.id });
-    if (result.length) {
-        return res.status(200).json({ data: returnBody(result) });
-    } else {
+    if (result) {
+        let historicParking = [];
+        for (const resultElement of result) {
+            historicParking.push(returnBody(resultElement));
+        }
+        return res.status(200).json({ data: historicParking });
+    }else {
         return res.status(404).json({ error: 'No Data Found' });
     }
 });
