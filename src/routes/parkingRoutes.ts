@@ -15,7 +15,6 @@ const returnBody = (result: any) => {
     for (const resultElement of result) {
         list.push(returnBodyArray(resultElement));
     }
-
     return list;
 };
 
