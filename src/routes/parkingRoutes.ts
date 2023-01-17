@@ -24,6 +24,19 @@ router.get('/current/:id', async (req, res) => {
     }
 });
 
+router.get('/historic/:id', async (req, res) => {
+    const result = await parkingHistorySensors.find({ 'body.device_id': req.params.id });
+    if (result) {
+        let historicParking = [];
+        for (const resultElement of result) {
+            historicParking.push(returnBody(resultElement));
+        }
+        return res.status(200).json({data: historicParking});
+    }else {
+        return res.status(404).json({ error: `No Id: ${req.params.id} found!` });
+    }
+});
+
 //Gibt die Historischen Daten eines bestimmten Sensors aus
 router.get('/historic/:id/last', async (req, res) => {
     const type = req.query.type;
