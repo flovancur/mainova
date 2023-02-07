@@ -42,11 +42,16 @@ const websocketParking = () => {
                 date.toTimeString().split(' ')[0]
             }`
         );
+        setTimeout(websocketParking,10000)
         if (intervalParking != null) {
             clearInterval(intervalParking);
             intervalParking = null;
         }
     });
+
+    ws.onerror = function(error) {
+        console.error('Verbindungsfehler der Parking Sensoren:', error);
+    };
 }
 
 export default websocketParking;

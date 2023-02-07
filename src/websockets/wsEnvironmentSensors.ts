@@ -3,6 +3,7 @@ import {update} from "../database/environmentData";
 import * as dotenv from "dotenv";
 import Websocket from "ws";
 
+
 const websocketEnvironment = () => {
 
     dotenv.config();
@@ -41,11 +42,18 @@ const websocketEnvironment = () => {
                 date.toTimeString().split(' ')[0]
             }`
         );
+        setTimeout(websocketEnvironment,10000)
         if (intervalEnvironment != null) {
             clearInterval(intervalEnvironment);
             intervalEnvironment = null;
         }
     });
+
+    ws.onerror = function(error) {
+        console.error('Verbindungsfehler der Enviroment Sensoren:', error);
+    };
 }
+
+
 
 export default websocketEnvironment;
