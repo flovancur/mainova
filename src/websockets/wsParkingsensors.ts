@@ -1,57 +1,43 @@
-import {Data} from "../schema/parksensorSchema";
-import {update} from "../database/parkingData";
 import * as dotenv from "dotenv";
-import Websocket from "ws";
+import {GenericWs} from "./genericWs";
+import {GenericWsMessage} from "../types/GenericWsMessage";
+import {ParksensorWsMessage} from "../types/ParksensorWsMessage";
+import {parkingHistorySensors, parkingSensors} from "../schema/parksensorSchema";
 
-const websocketParking = () => {
+export class WsParkingSensors extends GenericWs<ParksensorWsMessage>{
+    constructor() {
+        dotenv.config();
+        const stream = process.env.LINK_PARKINGSENSOR;
+        if (!stream) throw new Error('Missing Env LINK_PARKINGSENSOR');
+        super(stream);
+    }
 
-    dotenv.config();
+    protected messageParser(bodyData: any): ParksensorWsMessage {
+        return {
+            map_state: parseInt(String(bodyData.map_state)),
+            message_type: bodyData.message_type,
+            p_state: bodyData.p_state,
+        };
+    }
 
-    const stream = process.env.LINK_PARKINGSENSOR;
-    const parkingSensors = `${stream}`;
+    protected messageHandler(data: GenericWsMessage<ParksensorWsMessage>) {
+        this.updateParkingData(data).catch((err) => console.log(err));
+    }
 
-    const ws = new Websocket(parkingSensors);
-    let intervalParking: string | number | NodeJS.Timer | null | undefined = null;
+    private async updateParkingData(result: GenericWsMessage<ParksensorWsMessage>) {
+        await parkingSensors.findOneAndUpdate({'body.device_id': result.body.device_id},
+            {$set:
+                result},
+            {
+                upsert: true,
+            }
+        ).then(()=>console.log(`Parking Data Added! Device-Id: ${result.body.device_id}`))
 
+        await parkingHistorySensors.collection
+            .insertOne(
+                result,
+            )
+            .then(() => console.log(`Parking Data Added to History! Device-Id: ${result.body.device_id}`));
+    }
 
-    ws.onopen = () => {
-        const date = new Date();
-        console.log(
-            `Connected at:  ${date.toTimeString().split(' ')[0]} - ${date.getDate()}.${
-                date.getMonth() + 1
-            }.${date.getFullYear()}`
-        );
-        intervalParking = setInterval(() => {
-            const heartbeat = 'ping';
-            ws.send(heartbeat);
-        }, 30000);
-    };
-
-    // wenn ein Sensor eine Nachricht schickt:
-    ws.on('message', (data) => {
-        if (Array.isArray(data) || data.toString() === 'pong') return;
-        const result = JSON.parse(data.toString()) as Data[];
-        update(result).catch((err) => console.log(err));
-        console.log(result[0].body);
-    });
-
-    ws.on('close', () => {
-        const date = new Date();
-        console.log(
-            `Closed at: ${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()} - ${
-                date.toTimeString().split(' ')[0]
-            }`
-        );
-        setTimeout(websocketParking,10000)
-        if (intervalParking != null) {
-            clearInterval(intervalParking);
-            intervalParking = null;
-        }
-    });
-
-    ws.onerror = function(error) {
-        console.error('Verbindungsfehler der Parking Sensoren:', error);
-    };
 }
-
-export default websocketParking;

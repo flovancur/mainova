@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
-import websocketParking from "./websockets/wsParkingsensors";
-import websocketEnvironment from "./websockets/wsEnvironmentSensors";
+import {WsParkingSensors} from "./websockets/wsParkingsensors";
+import {WsEnvironmentSensors} from "./websockets/wsEnvironmentSensors";
 import parkingRoutes from './routes/parkingRoutes'
 import environmentRoutes from "./routes/environmentRoutes";
 import mongoose from "mongoose";
@@ -30,9 +30,8 @@ const mainovaDb = async () => {
 }
 mainovaDb().catch((err) => console.log(err));
 
-
-websocketParking(); // Startet die Parking-Websocketverbindung
-websocketEnvironment(); // Startet die Environment-Websocketverbindung
+new WsParkingSensors(); // Startet die Parking-Websocketverbindung
+new WsEnvironmentSensors();
 
 
 app.use(express.json());

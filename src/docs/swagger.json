@@ -1,0 +1,190 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Parksensor API",
+        "version": "1.0.0",
+        "description": "API for accessing parksensor data"
+    },
+    "basePath": "/",
+    "schemes": [
+        "http"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/parking/current/{id}": {
+            "get": {
+                "summary": "Get current status of a parksensor",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the parksensor to retrieve",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "object",
+                                    "properties": {
+                                        "deviceId": {
+                                            "type": "string"
+                                        },
+                                        "measured_at": {
+                                            "type": "string"
+                                        },
+                                        "p_state": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "deviceId",
+                                        "measured_at",
+                                        "p_state"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No Id found"
+                    }
+                }
+            }
+        },
+        "/parking/historic/{id}": {
+            "get": {
+                "summary": "Get historical data for a parksensor",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the parksensor to retrieve",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "deviceId": {
+                                                "type": "string"
+                                            },
+                                            "measured_at": {
+                                                "type": "string"
+                                            },
+                                            "p_state": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "required": [
+                                            "deviceId",
+                                            "measured_at",
+                                            "p_state"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No Id found"
+                    }
+                }
+            }
+        },
+        "/parking/historic/{id}/last": {
+            "get": {
+                "summary": "Get historical data for a parksensor based on a time interval",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the parksensor to retrieve",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "The type of time interval to use for filtering (entries, minutes, hours, days)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "value",
+                        "in": "query",
+                        "description": "The value of the time interval to use for filtering",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "deviceId": {
+                                                "type": "string"
+                                            },
+                                            "measured_at": {
+                                                "type": "string"
+                                            },
+                                            "p_state": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "required": [
+                                            "deviceId",
+                                            "measured_at",
+                                            "p_state"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No Data Found"
+                    },
+                    "422": {
+                        "description": "Invalid or missing parameters for filtering by time interval"
+                    }
+                }
+            }
+        }
+    }
+}

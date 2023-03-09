@@ -1,59 +1,49 @@
-import {Data} from "../schema/environmentSchema";
-import {update} from "../database/environmentData";
 import * as dotenv from "dotenv";
-import Websocket from "ws";
+import {GenericWs} from "./genericWs";
+import {GenericWsMessage} from "../types/GenericWsMessage";
+import {EnvironmentMessage} from "../types/EnvironmentMessage";
+import {environmentHistorySensors, environmentSensors} from "../schema/environmentSchema";
 
+export class WsEnvironmentSensors extends GenericWs<EnvironmentMessage> {
+    constructor() {
+        dotenv.config();
+        const stream = process.env.LINK_ENVIRONMENTSENSOR;
+        if (!stream) throw new Error('Missing Env LINK_ENVIRONMENTSENSOR');
+        super(stream);
+    }
 
-const websocketEnvironment = () => {
-
-    dotenv.config();
-
-    const stream = process.env.LINK_ENVIRONMENTSENSOR;
-
-    const ws = new Websocket(`${stream}`);
-    let intervalEnvironment: string | number | NodeJS.Timer | null | undefined = null;
-
-
-    ws.onopen = () => {
-        const date = new Date();
-        console.log(
-            `Connected at:  ${date.toTimeString().split(' ')[0]} - ${date.getDate()}.${
-                date.getMonth() + 1
-            }.${date.getFullYear()}`
-        );
-        intervalEnvironment = setInterval(() => {
-            const heartbeat = 'ping';
-            ws.send(heartbeat);
-        }, 30000);
-    };
-
-    // wenn ein Sensor eine Nachricht schickt:
-    ws.on('message', (data) => {
-        if (Array.isArray(data) || data.toString() === 'pong') return;
-        const result = JSON.parse(data.toString()) as Data[];
-        update(result).catch((err) => console.log(err));
-        console.log(result[0].body);
-    });
-
-    ws.on('close', () => {
-        const date = new Date();
-        console.log(
-            `Closed at: ${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()} - ${
-                date.toTimeString().split(' ')[0]
-            }`
-        );
-        setTimeout(websocketEnvironment,10000)
-        if (intervalEnvironment != null) {
-            clearInterval(intervalEnvironment);
-            intervalEnvironment = null;
+    protected messageParser(bodyData: any): EnvironmentMessage {
+        return {
+            co: parseInt(String(bodyData.co)),
+            humidity: bodyData.humidity,
+            no2: bodyData.no2,
+            o3: bodyData.o3,
+            p10: bodyData.p10,
+            p25: bodyData.p25,
+            pressure: bodyData.pressure,
+            so2: bodyData.so2,
+            temperature: bodyData.temperature,
         }
-    });
+    }
 
-    ws.onerror = function(error) {
-        console.error('Verbindungsfehler der Enviroment Sensoren:', error);
-    };
+    protected messageHandler(data: GenericWsMessage<EnvironmentMessage>) {
+        this.updateEnvironmentSensors(data).catch((err) => console.log(err));
+    }
+
+    private async updateEnvironmentSensors(result: GenericWsMessage<EnvironmentMessage>) {
+        await environmentSensors.findOneAndUpdate({'body.device_id': result.body.device_id},
+            {
+                $set:
+                result
+            },
+            {
+                upsert: true,
+            }
+        ).then(() => console.log(`Environment Data Added! Device-Id: ${result.body.device_id}`))
+
+        await environmentHistorySensors.collection.insertOne(
+            result
+        ).then(() => console.log(`Environment Data Added! Device-Id: ${result.body.device_id}`))
+    }
+
 }
-
-
-
-export default websocketEnvironment;

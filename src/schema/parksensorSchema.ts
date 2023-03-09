@@ -1,25 +1,11 @@
 // Die Struktur der Daten die von Mainova gesendet werden.
 import mongoose from 'mongoose';
+import {GenericWsMessage} from "../types/GenericWsMessage";
+import {ParksensorWsMessage} from "../types/ParksensorWsMessage";
 
 const schema = mongoose.Schema;
 
-export interface Data {
-    event: 'reading_added';
-    body:{
-        parser_id: string;
-        device_id: string;
-        packet_id: string;
-        location: never | null;
-        inserted_at: number;
-        measured_at: number;
-        data: {
-            map_state: number;
-            message_type: string;
-            p_state: string;
-        };
-        id: string;
-    };
-}
+type Data = GenericWsMessage<ParksensorWsMessage>
 
 /*Diese Struktur ist bei allen Sensoren die selbe nur data unterscheidet sich und wird als
 eigenes Interface angelegt*/

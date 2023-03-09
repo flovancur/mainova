@@ -1,30 +1,10 @@
 import mongoose from 'mongoose';
+import {GenericWsMessage} from "../types/GenericWsMessage";
+import {EnvironmentMessage} from "../types/EnvironmentMessage";
 
 const schema = mongoose.Schema;
 
-export interface Data {
-    event: 'reading_added';
-    body:{
-        parser_id: string;
-        device_id: string;
-        packet_id: string;
-        location: never | null;
-        inserted_at: number;
-        measured_at: number;
-        data: {
-            co: number;
-            humidity: number;
-            no2: number;
-            o3: number;
-            p10: number;
-            p25: number;
-            pressure: number;
-            so2: number;
-            temperature: number;
-        };
-        id: string;
-    };
-}
+type Data = GenericWsMessage<EnvironmentMessage>
 
 /*Diese Struktur ist bei allen Sensoren die selbe nur data unterscheidet sich und wird als
 eigenes Interface angelegt*/
