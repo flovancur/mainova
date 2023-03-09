@@ -4,7 +4,6 @@ import { parkingHistorySensors, parkingSensors } from '../schema/parksensorSchem
 const router = Router();
 
 const returnBody = (result: any) => {
-
         return {
             deviceId: result.body.device_id,
             measured_at: result.body.measured_at,
